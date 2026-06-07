@@ -1,0 +1,259 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   CSS DESIGN TOKENS – DARK MODE (DEFAULT)
+   ============================================================ */
+html[data-theme='dark'] {
+  /* === GreenTrace Brand Palette (with Pink instead of Green) === */
+  --bg-base:        #030303;
+  --bg-surface:     #0a0a0a;
+  --bg-elevated:    #141414;
+
+  --accent:         #a855f7;
+  --accent-soft:    #c084fc;
+  --accent-dark:    #4c1d95;
+  --accent-pink:    #f15bb5;
+
+  /* === Border Tokens === */
+  --border-subtle:  rgba(168, 85, 247, 0.15);
+  --border-accent:  rgba(168, 85, 247, 0.40);
+
+  /* === Text Tokens === */
+  --text-primary:   #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-muted:     rgba(255, 255, 255, 0.35);
+
+  /* === Glow Tokens === */
+  --glow-purple:    rgba(168, 85, 247, 0.35);
+  --glow-pink:      rgba(241, 91, 181, 0.35);
+}
+
+/* Light mode overrides */
+html[data-theme='light'] {
+  /* === GreenTrace Brand Palette (with Pink instead of Green) === */
+  --bg-base:        #f8f6ff;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #f5f0ff;
+
+  --accent:         #a855f7;
+  --accent-soft:    #c084fc;
+  --accent-dark:    #4c1d95;
+  --accent-pink:    #f15bb5;
+
+  /* === Border Tokens === */
+  --border-subtle:  rgba(168, 85, 247, 0.15);
+  --border-accent:  rgba(168, 85, 247, 0.35);
+
+  /* === Text Tokens === */
+  --text-primary:   #030303;
+  --text-secondary: rgba(9, 6, 26, 0.75);
+  --text-muted:     rgba(9, 6, 26, 0.50);
+
+  /* === Glow Tokens === */
+  --glow-purple:    rgba(168, 85, 247, 0.15);
+  --glow-pink:      rgba(241, 91, 181, 0.15);
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+@layer base {
+  html {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1 {
+    font-family: 'Syne', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 0%,   rgba(76, 29, 149, 0.40) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 40% at 85% 100%, rgba(168, 85, 247, 0.20) 0%, transparent 60%),
+      radial-gradient(ellipse 35% 35% at 50% 50%,  rgba(241, 91, 181, 0.05) 0%, transparent 70%),
+      #030303;
+    background-attachment: fixed;
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.35);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.60);
+  }
+
+  /* Selection */
+  html[data-theme='dark'] ::selection {
+    background: rgba(134, 47, 250, 0.3);
+    color: #fff;
+  }
+  html[data-theme='light'] ::selection {
+    background: rgba(134, 47, 250, 0.2);
+    color: #030303;
+  }
+}
+
+/* ============================================================
+   COMPONENT UTILITIES
+   ============================================================ */
+@layer components {
+  /* ----- Primary glass card ----- */
+  .card-glass {
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.75) 0%, rgba(10, 10, 10, 0.60) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1.25rem;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 8px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  /* ----- Metric / stat card with purple tint ----- */
+  .card-metric {
+    background: linear-gradient(145deg, rgba(168, 85, 247, 0.10) 0%, rgba(10, 10, 10, 0.85) 100%);
+    border: 1px solid var(--border-accent);
+    border-radius: 1rem;
+    transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .card-metric:hover {
+    border-color: rgba(168, 85, 247, 0.60);
+    background: linear-gradient(145deg, rgba(168, 85, 247, 0.16) 0%, rgba(10, 10, 10, 0.85) 100%);
+  }
+
+  /* ----- Highlight card — purple-to-pink (brand gradient) ----- */
+  .card-highlight {
+    background: linear-gradient(135deg, #4c1d95 0%, #a855f7 55%, #f15bb5 100%);
+    border-radius: 1.25rem;
+  }
+
+  /* ----- Primary heading gradient: purple → pink (brand signature) ----- */
+  .text-gradient-primary {
+    background: linear-gradient(90deg, #a855f7 0%, #c084fc 50%, #f15bb5 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ----- Soft purple heading gradient ----- */
+  .text-gradient-soft {
+    background: linear-gradient(90deg, #c084fc 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ----- Pink accent gradient ----- */
+  .text-gradient-pink {
+    background: linear-gradient(90deg, #f15bb5 0%, #f97cc7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ----- Animations ----- */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in {
+    animation: fadeInUp 0.4s ease both;
+  }
+
+  /* ----- Premium glassmorphic card ----- */
+  .card-glass-premium {
+    background: rgba(26, 26, 46, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(42, 42, 78, 0.5);
+    border-radius: 1.2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* ----- Input focus glow utility ----- */
+  .input-focus-glow:focus {
+    border-color: rgba(108, 99, 255, 0.6);
+    background-color: rgba(108, 99, 255, 0.08);
+    box-shadow: 0 0 12px rgba(108, 99, 255, 0.2), inset 0 1px 2px rgba(108, 99, 255, 0.05);
+    outline: none;
+  }
+
+  /* ----- Premium pill badge ----- */
+  .badge-pill {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border: 1px solid;
+  }
+
+  .badge-qualified {
+    background: rgba(34, 197, 94, 0.2);
+    color: #86efac;
+    border-color: rgba(34, 197, 94, 0.4);
+  }
+
+  .badge-rejected {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+
+  /* ----- Category badge styling ----- */
+  .badge-category {
+    display: inline-block;
+    background: rgba(108, 99, 255, 0.2);
+    color: #d4ceff;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    letter-spacing: 0.01em;
+    border: 1px solid rgba(108, 99, 255, 0.3);
+  }
+
+  /* ----- Hover glow effect for interactive rows ----- */
+  .table-row-interactive:hover {
+    box-shadow: inset 0 0 12px rgba(108, 99, 255, 0.06);
+    transition: all 0.2s ease;
+  }
+}
