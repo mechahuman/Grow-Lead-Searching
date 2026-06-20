@@ -75,9 +75,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    router.push('/login')
+    try {
+      await supabase.auth.signOut({ scope: 'local' })
+      setUser(null)
+      // Use window.location for a full page redirect to ensure middleware sees no session
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('[AuthProvider] Error signing out:', error)
+      // Fallback: still redirect even if there's an error
+      window.location.href = '/login'
+    }
   }
 
   return (
