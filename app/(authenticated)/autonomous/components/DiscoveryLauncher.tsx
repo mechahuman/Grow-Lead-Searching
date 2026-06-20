@@ -107,23 +107,26 @@ export function DiscoveryLauncher() {
       WebkitBackdropFilter: 'blur(12px)',
       borderRadius: '1.2rem',
       border: '1px solid rgba(42, 42, 78, 0.5)',
-      padding: '2rem',
+      padding: '1.75rem',
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
     }}>
-      <h2 style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '1.5rem', letterSpacing: '-0.01em' }}>Start a Discovery Run</h2>
+      <h2 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1.25rem', letterSpacing: '-0.01em' }}>Start a Discovery Run</h2>
 
       <form onSubmit={handleStartDiscovery} id="discovery-form">
         {/* Campaign Description */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label htmlFor="campaign-description" style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label htmlFor="campaign-description" style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
             What Kind of YouTube Channels Are You Looking For? <span style={{ color: '#ef4444' }}>*</span>
           </label>
           <textarea
             id="campaign-description"
-            placeholder='Example: Small tech tutorial channels covering software, between 1k and 10k subscribers, based in India'
+            placeholder='E.g., fitness coaching channels, 5k-50k subs, English-speaking'
             value={description}
             onChange={e => setDescription(e.target.value)}
-            rows={3}
+            rows={2}
             disabled={isRunning}
             required
             style={{
@@ -201,8 +204,8 @@ export function DiscoveryLauncher() {
         </div>
 
         {/* Max Qualified Leads */}
-        <div style={{ marginBottom: '1.75rem' }}>
-          <label htmlFor="max-leads" style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label htmlFor="max-leads" style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
             How Many Qualified Leads Do You Want? <span style={{ color: '#ef4444' }}>*</span>
           </label>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

@@ -1,0 +1,21 @@
+{
+  "name": "GROW Autonomous Lead Discovery",
+  "short_name": "GROW Autonomous",
+  "description": "AI-powered autonomous YouTube channel discovery and lead qualification",
+  "start_url": "/autonomous",
+  "display": "standalone",
+  "theme_color": "#a855f7",
+  "background_color": "#030303",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

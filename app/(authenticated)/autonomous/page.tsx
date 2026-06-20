@@ -59,26 +59,28 @@ export default async function AutonomousPage() {
   const discoveredLeads = await getDiscoveredLeads()
 
   return (
-    <main className="animate-fade-in min-h-screen px-6 py-8 xl:px-8 max-w-7xl mx-auto">
-      {/* Page header — Centered, premium spacing */}
-      <div className="mb-10">
-        <h1 className="text-4xl font-bold text-gradient-primary mb-2">Autonomous Lead Discovery</h1>
-        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-          AI-powered YouTube channel discovery and qualification powered by Groq LLM
-        </p>
-      </div>
+    <main className="h-screen w-full overflow-hidden bg-transparent flex flex-col px-8 py-6 xl:px-12">
+      <div className="max-w-full w-full flex flex-col h-full gap-5">
+        {/* Page header — Professional spacing */}
+        <div className="flex-shrink-0">
+          <h1 className="text-4xl font-bold text-gradient-primary mb-2" style={{ letterSpacing: '-0.02em' }}>Autonomous Lead Discovery</h1>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)', maxWidth: '600px' }}>
+            AI-powered YouTube channel discovery and qualification powered by Groq LLM
+          </p>
+        </div>
 
-      {/* Two-column layout: Launcher (5 cols) + Leads Table (7 cols) on desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Panel: Discovery Launcher (5 columns on desktop) */}
-        <section className="lg:col-span-5" aria-label="Launch a discovery run">
-          <DiscoveryLauncher />
-        </section>
+        {/* Two-column layout: Launcher (40%) + Leads Table (60%) on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch flex-1 min-h-0">
+          {/* Left Panel: Discovery Launcher */}
+          <section className="lg:col-span-2 flex flex-col min-h-0" aria-label="Launch a discovery run">
+            <DiscoveryLauncher />
+          </section>
 
-        {/* Right Panel: Discovered Leads (7 columns on desktop) */}
-        <section className="lg:col-span-7" aria-label="Discovered leads awaiting review">
-          <DiscoveredLeadsList initialLeads={discoveredLeads} />
-        </section>
+          {/* Right Panel: Discovered Leads */}
+          <section className="lg:col-span-3 flex flex-col min-h-0 overflow-hidden" aria-label="Discovered leads awaiting review">
+            <DiscoveredLeadsList initialLeads={discoveredLeads} />
+          </section>
+        </div>
       </div>
     </main>
   )
