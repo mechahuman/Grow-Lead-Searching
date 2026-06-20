@@ -1,181 +1,471 @@
-// app/login/page.tsx
-// Beautiful login page with Google OAuth integration
+'use client'
 
-import { Metadata } from 'next'
-import { LoginForm } from './components/LoginForm'
+import { useState } from 'react'
+import growLogo from '../../public/logo-light.png'
+import { createClient } from '../../lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { Mail, Lock, Loader2 } from 'lucide-react'
 
-export const metadata: Metadata = {
-  title: 'Login | Autonomous Lead Discovery',
-  description: 'Sign in to GROW Autonomous Lead Discovery System',
-}
+export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [isLeaving, setIsLeaving] = useState(false)
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
 
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
-  const error = searchParams.error as string | undefined
-  const redirectTo = (searchParams.redirectTo as string) || '/autonomous'
+  async function handleGoogleLogin() {
+    setError(null)
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+      }
+    } catch (err) {
+      setError('Failed to initiate Google login')
+      setLoading(false)
+    }
+  }
+
+  async function handleAdminSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      setError(error.message)
+      setLoading(false)
+    } else if (data.user) {
+      // Redirect to autonomous dashboard after successful login
+      setIsLeaving(true)
+      setTimeout(() => {
+        router.push('/autonomous')
+        router.refresh()
+      }, 400)
+    }
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-dark-bg overflow-hidden">
-      {/* Background gradient elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Animated gradient orbs */}
-        <div className="absolute top-0 left-0 w-96 h-96 bg-accent-purple opacity-20 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent-pink opacity-15 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-accent-orange opacity-10 rounded-full blur-3xl animate-float"></div>
+    <main
+      className="relative min-h-screen w-full overflow-hidden flex flex-col items-center justify-center px-6 py-12"
+      style={{
+        background: '#1a1a2e',
+        color: '#fff',
+      }}
+    >
+      {/* Background video with gradient fallback */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 0,
+          background: 'linear-gradient(135deg, #0a0410 0%, #1a0a2e 40%, #16213e 100%)'
+        }}
+      >
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          onLoadStart={() => console.log('[Video] Load started')}
+          onLoadedData={() => console.log('[Video] Data loaded')}
+          onLoadedMetadata={() => console.log('[Video] Metadata loaded')}
+          onCanPlay={() => console.log('[Video] Can play')}
+          onPlay={() => console.log('[Video] Playing')}
+          onError={(e) => {
+            const error = (e.target as HTMLVideoElement).error
+            console.error('[Video] Error:', error?.code, error?.message)
+          }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 1
+          }}
+        >
+          <source src="/video/8wrHPCX2dC3msyYU9ObwqNdm00u3ViXvOSHUMRYSEe5Q.mp4" type="video/mp4" />
+        </video>
       </div>
 
-      {/* Main container */}
-      <div className="relative z-10 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 min-h-screen lg:min-h-auto">
-          {/* Left side - Visual/Branding (hidden on mobile) */}
-          <div className="hidden lg:flex flex-col items-center justify-center px-8 relative">
-            {/* Decorative gradient card */}
-            <div className="absolute inset-0 bg-gradient-to-br from-accent-purple/20 to-accent-pink/10 rounded-r-3xl"></div>
+      {/* Scrim overlay */}
+      <div
+        className="absolute inset-0 z-[1]"
+        style={{
+          background:
+            'radial-gradient(ellipse 75% 75% at 50% 45%, rgba(8,6,15,.18), rgba(5,4,10,.5)), linear-gradient(180deg, rgba(5,4,10,.22), rgba(5,4,10,.5))',
+        }}
+      />
 
-            <div className="relative z-20 text-center space-y-8 max-w-md">
-              {/* GROW Logo */}
-              <div className="flex flex-col items-center gap-4">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-accent-pink to-accent-purple flex items-center justify-center shadow-lg shadow-accent-pink/30">
-                  <span className="text-4xl font-black text-white">G</span>
-                </div>
-                <div>
-                  <h1 className="text-4xl font-black text-gradient-primary mb-2">GROW</h1>
-                  <p className="text-sm text-text-secondary">Lead Discovery System</p>
-                </div>
-              </div>
-
-              {/* Feature highlights */}
-              <div className="space-y-6 pt-8">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent-pink/20 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-accent-pink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-text-primary">Autonomous Discovery</h3>
-                    <p className="text-xs text-text-secondary mt-1">AI-powered YouTube channel finding</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent-purple/20 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-accent-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-text-primary">Smart Qualification</h3>
-                    <p className="text-xs text-text-secondary mt-1">LLM-powered lead scoring</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-accent-orange/20 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-accent-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-text-primary">Full Transparency</h3>
-                    <p className="text-xs text-text-secondary mt-1">See all decisions and reasoning</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Footer text */}
-              <p className="text-xs text-text-muted pt-8 border-t border-border-subtle">
-                Secure admin access only
-              </p>
-            </div>
+      {/* Content wrapper */}
+      <div className="relative z-[2] flex flex-col items-center w-full">
+        {/* Logo section */}
+        <div className="flex flex-col items-center mb-8">
+          <div className="inline-flex" style={{ padding: '18px 24px' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={growLogo.src}
+              alt="GetRichOnWednesday"
+              style={{
+                height: 'clamp(64px, 20vw, 84px)',
+                display: 'block',
+                width: 'auto',
+              }}
+              onError={(e) => {
+                console.error('Logo failed to load:', e)
+              }}
+            />
           </div>
-
-          {/* Right side - Login Form */}
-          <div className="flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-12 lg:py-0">
-            <div className="w-full max-w-md">
-              {/* Mobile logo (shown on mobile, hidden on desktop) */}
-              <div className="lg:hidden mb-8 flex flex-col items-center gap-2">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent-pink to-accent-purple flex items-center justify-center shadow-lg shadow-accent-pink/30">
-                  <span className="text-3xl font-black text-white">G</span>
-                </div>
-                <h1 className="text-2xl font-black text-gradient-primary">GROW</h1>
-              </div>
-
-              {/* Glass card container */}
-              <div className="card-glass p-8 space-y-6">
-                {/* Header */}
-                <div>
-                  <h2 className="text-2xl font-bold text-text-primary mb-2">Welcome Back</h2>
-                  <p className="text-sm text-text-secondary">
-                    Sign in to access the Autonomous Lead Discovery System
-                  </p>
-                </div>
-
-                {/* Error message */}
-                {error && (
-                  <div className="rounded-lg bg-red-500/10 border border-red-500/30 p-4">
-                    <div className="flex items-start gap-3">
-                      <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <div>
-                        <h3 className="text-sm font-semibold text-red-400">
-                          {error === 'unauthorized'
-                            ? 'Unauthorized Access'
-                            : error === 'no_code'
-                            ? 'Authentication Failed'
-                            : error === 'exchange_failed'
-                            ? 'Exchange Failed'
-                            : 'Authentication Error'}
-                        </h3>
-                        <p className="text-xs text-red-300/80 mt-1">
-                          {error === 'unauthorized'
-                            ? 'This Google account does not have access. Please use an authorized account.'
-                            : error === 'no_code'
-                            ? 'No authorization code was provided.'
-                            : error === 'exchange_failed'
-                            ? 'Failed to exchange code for session.'
-                            : 'An unexpected error occurred during authentication.'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Login form */}
-                <LoginForm redirectTo={redirectTo} />
-
-                {/* Divider */}
-                <div className="relative py-2">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border-subtle"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="px-2 bg-dark-bg text-text-muted">Admin Only</span>
-                  </div>
-                </div>
-
-                {/* Footer text */}
-                <p className="text-xs text-text-muted text-center">
-                  Authorized administrators only. Unauthorized access attempts are logged.
-                </p>
-              </div>
-
-              {/* Bottom badge */}
-              <div className="mt-6 text-center">
-                <p className="text-xs text-text-muted">
-                  Secured by{' '}
-                  <span className="font-semibold text-text-primary">Supabase</span> +{' '}
-                  <span className="font-semibold text-text-primary">Google OAuth</span>
-                </p>
-              </div>
-            </div>
-          </div>
+          <p
+            className="mt-2.5 text-center uppercase tracking-[.2em]"
+            style={{
+              color: 'rgba(255,255,255,.55)',
+              fontWeight: 600,
+              fontSize: '12px',
+              lineHeight: 1,
+            }}
+          >
+            Autonomous Lead Searching Platform
+          </p>
         </div>
+
+        {/* Card */}
+        <div
+          className="w-full max-w-[430px]"
+          style={{
+            marginTop: '34px',
+            background: 'rgba(12,9,20,.62)',
+            border: '1px solid rgba(255,255,255,.10)',
+            borderRadius: 'clamp(18px, 5vw, 22px)',
+            padding: 'clamp(26px, 6vw, 34px)',
+            backdropFilter: 'blur(22px)',
+            WebkitBackdropFilter: 'blur(22px)',
+            boxShadow: '0 40px 90px rgba(0,0,0,.6)',
+            opacity: isLeaving ? 0 : 1,
+            transition: 'opacity 0.4s ease-in',
+          }}
+        >
+          <h1
+            className="text-center m-0"
+            style={{
+              color: '#fff',
+              fontWeight: 700,
+              fontSize: '24px',
+              lineHeight: 1.1,
+              letterSpacing: '-.01em',
+            }}
+          >
+            Welcome back
+          </h1>
+          <p
+            className="text-center"
+            style={{
+              margin: '8px 0 0',
+              color: 'rgba(255,255,255,.55)',
+              fontWeight: 400,
+              fontSize: '14px',
+              lineHeight: 1.4,
+            }}
+          >
+            Sign in to access your dashboard
+          </p>
+
+          {!showAdminLogin ? (
+            <div style={{ marginTop: '26px' }}>
+              {/* Google Login Button */}
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-lg font-semibold text-sm transition-all"
+                style={{
+                  background: '#ffffff',
+                  color: '#15121c',
+                  border: 0,
+                  cursor: 'pointer',
+                  boxShadow: '0 8px 24px rgba(0,0,0,.3)',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-1px)'
+                  ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 12px 30px rgba(0,0,0,.4)'
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'
+                  ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(0,0,0,.3)'
+                }}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    Signing in…
+                  </>
+                ) : (
+                  <>
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                    </svg>
+                    Continue with Google
+                  </>
+                )}
+              </button>
+
+              {error && (
+                <div
+                  className="flex items-start gap-2 px-3 py-2.5 rounded-lg text-sm border mt-4"
+                  style={{
+                    background: 'rgba(255, 107, 107, 0.12)',
+                    borderColor: 'rgba(255, 107, 107, 0.3)',
+                    color: '#ff6b6b',
+                  }}
+                >
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Divider */}
+              <div
+                className="flex items-center gap-3.5 my-5"
+                style={{
+                  color: 'rgba(255,255,255,.38)',
+                  fontWeight: 500,
+                  fontSize: '12px',
+                }}
+              >
+                <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,.12)' }} />
+                Or
+                <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,.12)' }} />
+              </div>
+
+              {/* Admin Login Button */}
+              <button
+                type="button"
+                onClick={() => setShowAdminLogin(true)}
+                style={{
+                  width: '100%',
+                  height: '50px',
+                  border: '1px solid rgba(255,255,255,.16)',
+                  borderRadius: '14px',
+                  background: 'rgba(255,255,255,.03)',
+                  color: '#eceaf4',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'background 0.15s ease, border-color 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,.08)'
+                  ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.28)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,.03)'
+                  ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,.16)'
+                }}
+              >
+                Admin login
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleAdminSubmit} style={{ marginTop: '26px' }}>
+              {/* Email field */}
+              <div style={{ marginBottom: '16px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    color: 'rgba(255,255,255,.55)',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '.02em',
+                    marginBottom: '12px',
+                  }}
+                >
+                  Email
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Mail
+                    size={16}
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'rgba(255,255,255,.38)',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoFocus
+                    placeholder="growadmin@gmail.com"
+                    style={{
+                      width: '100%',
+                      paddingLeft: '36px',
+                      paddingRight: '12px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,.12)',
+                      background: 'rgba(255,255,255,.05)',
+                      color: '#fff',
+                      fontSize: '14px',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Password field */}
+              <div style={{ marginBottom: '16px' }}>
+                <label
+                  style={{
+                    display: 'block',
+                    color: 'rgba(255,255,255,.55)',
+                    fontWeight: 600,
+                    fontSize: '12px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '.02em',
+                    marginBottom: '12px',
+                  }}
+                >
+                  Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <Lock
+                    size={16}
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'rgba(255,255,255,.38)',
+                      pointerEvents: 'none',
+                    }}
+                  />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    style={{
+                      width: '100%',
+                      paddingLeft: '36px',
+                      paddingRight: '12px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(255,255,255,.12)',
+                      background: 'rgba(255,255,255,.05)',
+                      color: '#fff',
+                      fontSize: '14px',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Error message */}
+              {error && (
+                <div
+                  className="flex items-start gap-2 px-3 py-2.5 rounded-lg text-sm border mb-4"
+                  style={{
+                    background: 'rgba(255, 107, 107, 0.12)',
+                    borderColor: 'rgba(255, 107, 107, 0.3)',
+                    color: '#ff6b6b',
+                  }}
+                >
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Submit button */}
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: '100%',
+                  marginTop: '24px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  border: 0,
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+                  color: '#fff',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s ease',
+                  opacity: loading ? 0.7 : 1,
+                }}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 size={16} className="animate-spin" />
+                    Signing in…
+                  </span>
+                ) : (
+                  'Sign in'
+                )}
+              </button>
+
+              {/* Back button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAdminLogin(false)
+                  setEmail('')
+                  setPassword('')
+                  setError(null)
+                }}
+                style={{
+                  width: '100%',
+                  marginTop: '16px',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  border: 0,
+                  background: 'transparent',
+                  color: 'rgba(255,255,255,.55)',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'color 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,.8)'
+                }}
+                onMouseLeave={(e) => {
+                  ;(e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,.55)'
+                }}
+              >
+                Back to Google login
+              </button>
+            </form>
+          )}
+        </div>
+
       </div>
-    </div>
+    </main>
   )
 }
