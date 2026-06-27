@@ -50,11 +50,43 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the user to verify email
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    let user = null
+    try {
+      const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
 
-    if (userError || !user?.email) {
-      console.error('[API/Callback] getUser error:', userError)
-      return NextResponse.json({ error: 'Failed to get user' }, { status: 400 })
+      if (userError) {
+        // If we get a refresh token error, it's likely already valid but was consumed
+        if (userError.message?.includes('refresh_token_already_used')) {
+          console.warn('[API/Callback] Token already used (expected in some cases), proceeding anyway')
+          // Extract user from JWT if possible
+          const decoded = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString())
+          user = {
+            id: decoded.sub,
+            email: decoded.email,
+          }
+        } else {
+          console.error('[API/Callback] getUser error:', userError)
+          return NextResponse.json({ error: 'Failed to get user' }, { status: 400 })
+        }
+      } else if (userData?.email) {
+        user = userData
+      }
+    } catch (e) {
+      console.error('[API/Callback] Error getting user:', e)
+      // Try to extract from token
+      try {
+        const decoded = JSON.parse(Buffer.from(accessToken.split('.')[1], 'base64').toString())
+        user = {
+          id: decoded.sub,
+          email: decoded.email,
+        }
+      } catch {
+        return NextResponse.json({ error: 'Failed to decode user information' }, { status: 400 })
+      }
+    }
+
+    if (!user?.email) {
+      return NextResponse.json({ error: 'No email found in token' }, { status: 400 })
     }
 
     // Check email authorization
@@ -62,8 +94,12 @@ export async function POST(request: NextRequest) {
     if (user.email !== authorizedEmail) {
       console.warn(`[API/Callback] Unauthorized: ${user.email}`)
 
-      // Sign out unauthorized user
-      await supabase.auth.signOut()
+      // Sign out unauthorized user (don't error if this fails due to token issues)
+      try {
+        await supabase.auth.signOut()
+      } catch (e) {
+        console.warn('[API/Callback] Error signing out unauthorized user:', e)
+      }
 
       return NextResponse.json(
         { error: 'unauthorized', message: 'This email is not authorized.' },
