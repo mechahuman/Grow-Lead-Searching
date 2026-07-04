@@ -189,12 +189,11 @@ export function DiscoveredLeadsList({ initialLeads }: Props) {
         All channels processed. <span style={{ color: '#86efac', fontWeight: '600' }}>✅ Qualified</span> are ready. <span style={{ color: '#fca5a5', fontWeight: '600' }}>❌ Rejected</span> did not meet criteria.
       </p>
 
-      {/* Table — Premium styling with flex layout */}
+      {/* Table — Premium styling with fixed height for scrolling */}
       <div style={{
         borderRadius: '0.85rem',
         border: '1px solid rgba(42, 42, 78, 0.4)',
-        flex: 1,
-        minHeight: 0,
+        maxHeight: '360px',
         overflowY: 'auto',
         overflowX: 'auto',
       }} role="region" aria-label="Discovered leads table">
