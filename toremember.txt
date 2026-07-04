@@ -1,0 +1,11 @@
++ Niche Grabbing and Keywords seperately, Map them to search in admin dashboard and team members.
++ Business Plan of Execution 
++ Admin should have their own enrichment component (isolated).
++ De - Duplication error message, validation if duplicate.
+
+
++ Autonomous Scaling - add criteria of S2V and refine the searching.
+
+- From Chintu: 
+    + Business Plan of Action example needed.
+    + Types of Niche List needed for suggestion and reference.
