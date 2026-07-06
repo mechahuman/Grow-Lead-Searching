@@ -418,10 +418,6 @@ export function DiscoveredLeadsList({ initialLeads }: Props) {
         </table>
       </div>
 
-      <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '1rem', marginBottom: '0', lineHeight: '1.5', flexShrink: 0 }}>
-        <strong>Next:</strong> Approve leads to integrate with Audit Tool.
-      </p>
-
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
