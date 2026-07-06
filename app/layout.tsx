@@ -4,7 +4,7 @@ import { PageTransition } from '@/components/PageTransition'
 import { AuthProvider } from '@/lib/auth/context'
 
 export const metadata: Metadata = {
-  title: 'Autonomous Lead Discovery | GROW',
+  title: 'GROW Autonomous Lead Searching',
   description: 'AI-powered autonomous YouTube channel discovery and lead qualification.',
 }
 
