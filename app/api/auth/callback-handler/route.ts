@@ -89,9 +89,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No email found in token' }, { status: 400 })
     }
 
-    // Check email authorization
-    const authorizedEmail = process.env.NEXT_PUBLIC_AUTHORIZED_ADMIN_EMAIL
-    if (user.email !== authorizedEmail) {
+    // Check email authorization against Supabase table
+    const { data: authorizedUser, error: authCheckError } = await supabase
+      .from('authorized_users')
+      .select('email')
+      .eq('email', user.email)
+      .single()
+
+    if (authCheckError || !authorizedUser) {
       console.warn(`[API/Callback] Unauthorized: ${user.email}`)
 
       // Sign out unauthorized user (don't error if this fails due to token issues)
