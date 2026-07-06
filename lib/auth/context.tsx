@@ -78,13 +78,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await supabase.auth.signOut({ scope: 'local' })
       setUser(null)
-      // Use window.location for a full page redirect to ensure middleware sees no session
-      window.location.href = '/login'
     } catch (error) {
       console.error('[AuthProvider] Error signing out:', error)
-      // Fallback: still redirect even if there's an error
-      window.location.href = '/login'
     }
+    // Clear cookie-based session (used by middleware)
+    try {
+      await fetch('/auth/signout', { method: 'POST', redirect: 'manual' })
+    } catch {
+      // ignore network errors — still redirect
+    }
+    window.location.href = '/login'
   }
 
   return (
