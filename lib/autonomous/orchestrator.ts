@@ -400,6 +400,23 @@ export async function runAutonomousScouting(campaign: CampaignConfig): Promise<R
     // ── Step 4b: Convert enrichment → snapshot for qualifier ─────────────
     const snapshot = mapEnrichmentToSnapshot(enrichment)
 
+    // ── Step 4b.5: S2V ratio pre-filter ────────────────────────────────
+    const s2vRatio = enrichment.s2vRatioPct
+    if (s2vRatio !== null && s2vRatio < 10) {
+      const reason = `S2V ratio ${s2vRatio.toFixed(1)}% is below the 10% threshold — likely ghost or purchased audience.`
+      console.log(`[Orchestrator] ❌ REJECTED (S2V pre-filter): ${reason}`)
+      const rejection = { qualified: false, reason }
+      try {
+        await saveLeadDecision(supabase, enrichment, rejection, resolvedCampaign, channel.discoveredFromQuery)
+        summary.totalRejected++
+        logDecision({ channelId: channel.channelId, channelTitle: channel.channelTitle, reason, category: 'rejected_lead' })
+      } catch (err) {
+        summary.errors.push(`Save failed for ${channel.channelId}: ${String(err)}`)
+      }
+      await new Promise(r => setTimeout(r, 500))
+      continue
+    }
+
     // ── Step 4c: LLM qualification ───────────────────────────────────────
     let qualification: Awaited<ReturnType<typeof qualifyChannel>>
     try {
