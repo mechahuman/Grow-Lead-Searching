@@ -156,7 +156,7 @@ export function DiscoveryLauncher() {
           />
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '0.75rem' }}>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '0', lineHeight: '1.5', flex: 1 }}>
-              💡 Mention the niche, subscriber range, location, and content style. The AI will handle everything else.
+              Mention the niche, subscriber range, location, and content style. The AI will handle everything else.
             </p>
             <button
               type="button"
