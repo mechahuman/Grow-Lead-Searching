@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     // Clear cookie-based session (used by middleware)
     try {
-      await fetch('/auth/signout', { method: 'POST', redirect: 'manual' })
+      await fetch('/auth/signout', { method: 'POST', redirect: 'manual', credentials: 'include' })
     } catch {
       // ignore network errors — still redirect
     }
