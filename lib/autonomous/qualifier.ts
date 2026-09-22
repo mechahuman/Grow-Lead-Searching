@@ -1,14 +1,14 @@
 // lib/autonomous/qualifier.ts
 // Evaluates whether a discovered YouTube channel qualifies as a campaign lead.
 //
-// STANDALONE MODULE — Imports only from groq-sdk and ./types.
+// STANDALONE MODULE — Imports only from openai and ./types.
 // Does not know about search, memory, or database.
 //
 // Usage:
 //   import { qualifyChannel } from './qualifier'
 //   const result = await qualifyChannel(snapshot, campaign)
 
-import Groq from 'groq-sdk'
+import OpenAI from 'openai'
 import type { QualificationResult, CampaignConfig } from './types'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -43,14 +43,14 @@ export interface ChannelSnapshot {
 
 // ─── Internals ───────────────────────────────────────────────────────────────
 
-function getGroqClient(): Groq {
-  const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) throw new Error('[Qualifier] GROQ_API_KEY is not set in environment.')
-  return new Groq({ apiKey })
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) throw new Error('[Qualifier] OPENAI_API_KEY is not set in environment.')
+  return new OpenAI({ apiKey })
 }
 
 function getModel(): string {
-  return process.env.AUTONOMOUS_GROQ_MODEL ?? 'llama-3.3-70b-versatile'
+  return process.env.AUTONOMOUS_OPENAI_MODEL ?? 'gpt-5.6-luna'
 }
 
 /**
@@ -159,20 +159,20 @@ Evaluate this channel. Return only the JSON schema specified in the system promp
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Evaluates a YouTube channel against a campaign's criteria using the Groq LLM.
+ * Evaluates a YouTube channel against a campaign's criteria using the OpenAI LLM.
  *
  * @param snapshot - Lightweight summary of the channel's data (built by orchestrator)
  * @param campaign - The active campaign configuration (target market + product)
  * @returns QualificationResult with a boolean decision and supporting metadata
  *
- * @throws Error if GROQ_API_KEY is not set.
+ * @throws Error if OPENAI_API_KEY is not set.
  *         Does NOT throw on LLM parse errors — returns qualified=false with an error reason.
  */
 export async function qualifyChannel(
   snapshot: ChannelSnapshot,
   campaign: CampaignConfig
 ): Promise<QualificationResult> {
-  const groq = getGroqClient()
+  const openai = getOpenAIClient()
   const userPrompt = buildUserPrompt(snapshot, campaign)
 
   console.log(
@@ -180,14 +180,14 @@ export async function qualifyChannel(
     `(${formatCount(snapshot.subscriberCount)} subs | ${formatCount(snapshot.totalViews)} views)`
   )
 
-  const completion = await groq.chat.completions.create({
+  const completion = await openai.chat.completions.create({
     model: getModel(),
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },
     ],
-    temperature: 0.2,    // Low temperature for consistent, reproducible decisions
-    max_tokens: 256,     // Schema is short — 256 is more than enough
+    temperature: 0.2,           // Low temperature for consistent, reproducible decisions
+    max_completion_tokens: 256, // Schema is short — 256 is more than enough
   })
 
   const raw = completion.choices[0]?.message?.content ?? '{}'
@@ -230,11 +230,11 @@ export async function qualifyChannel(
 
 /**
  * Qualifies multiple channels sequentially with a delay between each call.
- * Prevents Groq rate limiting on the free tier.
+ * Prevents rate limiting.
  *
  * @param snapshots - Array of channel snapshots to evaluate
  * @param campaign - Campaign config to evaluate against
- * @param delayMs - Milliseconds to wait between each Groq API call (default: 300ms)
+ * @param delayMs - Milliseconds to wait between each OpenAI API call (default: 300ms)
  */
 export async function qualifyChannelBatch(
   snapshots: ChannelSnapshot[],

@@ -23,7 +23,7 @@ import { getAutonomousSupabaseAdmin } from './supabase-client'
 // ── Existing pipeline (reused, not modified) ─────────────────────────────────
 import { fetchAllYouTubeData } from '../youtube/orchestrator'
 import type { YouTubeEnrichmentResult } from '../youtube/types'
-import Groq from 'groq-sdk'
+import OpenAI from 'openai'
 
 // ─── Helper: Parse Natural Language Description ──────────────────────────────
 
@@ -35,7 +35,7 @@ interface ParsedCampaignDescription {
 }
 
 async function parseNaturalLanguageDescription(description: string): Promise<ParsedCampaignDescription> {
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
   const systemPrompt = `You are a campaign specification parser. Extract structured information from natural language campaign descriptions.
 
@@ -65,14 +65,14 @@ Return ONLY valid JSON. No markdown, no code fences.`
   console.log('[Orchestrator] Step 0/5: Parsing natural language campaign description...')
 
   try {
-    const completion = await groq.chat.completions.create({
-      model: process.env.AUTONOMOUS_GROQ_MODEL ?? 'llama-3.3-70b-versatile',
+    const completion = await openai.chat.completions.create({
+      model: process.env.AUTONOMOUS_OPENAI_MODEL ?? 'gpt-5.6-luna',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
       temperature: 0.2,
-      max_tokens: 256,
+      max_completion_tokens: 256,
     })
 
     const raw = completion.choices[0]?.message?.content ?? '{}'

@@ -1,14 +1,14 @@
 // lib/autonomous/query-generator.ts
-// Generates YouTube search queries from a campaign definition using the Groq LLM.
+// Generates YouTube search queries from a campaign definition using the OpenAI LLM.
 //
 // STANDALONE MODULE — No imports from other autonomous/* files.
-// Only external dependency: groq-sdk (already installed).
+// Only external dependency: openai (already installed).
 //
 // Usage:
 //   import { generateSearchQueries } from './query-generator'
 //   const { queries } = await generateSearchQueries({ targetMarket, productDescription })
 
-import Groq from 'groq-sdk'
+import OpenAI from 'openai'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -30,20 +30,20 @@ export interface QueryGeneratorOutput {
   queries: string[]
   /** The raw LLM response string (for debugging/logging) */
   rawResponse: string
-  /** Number of Groq API calls made (always 1) */
+  /** Number of OpenAI API calls made (always 1) */
   apiCallCount: 1
 }
 
 // ─── Internals ───────────────────────────────────────────────────────────────
 
-function getGroqClient(): Groq {
-  const apiKey = process.env.GROQ_API_KEY
-  if (!apiKey) throw new Error('[QueryGenerator] GROQ_API_KEY is not set in environment.')
-  return new Groq({ apiKey })
+function getOpenAIClient(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) throw new Error('[QueryGenerator] OPENAI_API_KEY is not set in environment.')
+  return new OpenAI({ apiKey })
 }
 
 function getModel(): string {
-  return process.env.AUTONOMOUS_GROQ_MODEL ?? 'llama-3.3-70b-versatile'
+  return process.env.AUTONOMOUS_OPENAI_MODEL ?? 'gpt-5.6-luna'
 }
 
 /**
@@ -114,17 +114,15 @@ function parseQueriesFromRaw(raw: string, count: number): string[] {
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Generates YouTube search query strings for a campaign using the free Groq LLM.
+ * Generates YouTube search query strings for a campaign using the OpenAI LLM.
  *
- * Groq API cost: 1 request per call. On the free tier (~14,400 req/day), this is negligible.
- *
- * @throws Error if GROQ_API_KEY is not set or the LLM returns unparseable output.
+ * @throws Error if OPENAI_API_KEY is not set or the LLM returns unparseable output.
  */
 export async function generateSearchQueries(
   input: QueryGeneratorInput
 ): Promise<QueryGeneratorOutput> {
   const count = input.count ?? parseInt(process.env.AUTONOMOUS_QUERIES_PER_RUN ?? '4', 10)
-  const groq = getGroqClient()
+  const openai = getOpenAIClient()
 
   const userPrompt = `Target Market: ${input.targetMarket}
 Product Being Promoted: ${input.productDescription}
@@ -134,14 +132,14 @@ Return ONLY a JSON array. No explanations.`
 
   console.log(`[QueryGenerator] Generating ${count} queries for market: "${input.targetMarket}"`)
 
-  const completion = await groq.chat.completions.create({
+  const completion = await openai.chat.completions.create({
     model: getModel(),
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },
     ],
-    temperature: 0.7,   // Some creativity for query variety
-    max_tokens: 512,    // More than enough for an array of 10 short strings
+    temperature: 0.7,           // Some creativity for query variety
+    max_completion_tokens: 512, // More than enough for an array of 10 short strings
     response_format: { type: 'text' }, // We handle JSON parsing ourselves
   })
 
