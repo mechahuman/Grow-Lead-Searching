@@ -1,19 +1,19 @@
 // app/api/autonomous/generate-example/route.ts
-// POST endpoint that generates a random campaign description example using Groq LLM.
+// POST endpoint that generates a random campaign description example using OpenAI LLM.
 
 import { NextRequest, NextResponse } from 'next/server'
-import Groq from 'groq-sdk'
+import OpenAI from 'openai'
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   console.log('[API/autonomous/generate-example] POST received')
 
   try {
-    const apiKey = process.env.GROQ_API_KEY
+    const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) {
-      throw new Error('GROQ_API_KEY is not configured')
+      throw new Error('OPENAI_API_KEY is not configured')
     }
 
-    const groq = new Groq({ apiKey })
+    const openai = new OpenAI({ apiKey })
 
     // Create a diverse prompt by randomly selecting a niche category
     const niches = [
@@ -73,8 +73,8 @@ Generate ONLY the description, no explanations or extra text. Make it unique and
 
     const selectedUserPrompt = userPrompts[Math.floor(Math.random() * userPrompts.length)]
 
-    const completion = await groq.chat.completions.create({
-      model: process.env.AUTONOMOUS_GROQ_MODEL ?? 'llama-3.3-70b-versatile',
+    const completion = await openai.chat.completions.create({
+      model: process.env.AUTONOMOUS_OPENAI_MODEL ?? 'gpt-5.6-luna',
       messages: [
         { role: 'system', content: systemPrompt },
         {
@@ -83,7 +83,7 @@ Generate ONLY the description, no explanations or extra text. Make it unique and
         },
       ],
       temperature: 1.0,
-      max_tokens: 180,
+      max_completion_tokens: 180,
     })
 
     const example = completion.choices[0]?.message?.content?.trim() ?? ''

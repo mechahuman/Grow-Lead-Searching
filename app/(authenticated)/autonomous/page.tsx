@@ -46,7 +46,7 @@ export default async function AutonomousPage() {
         <div>
           <h1 className="text-3xl font-bold text-gradient-primary mb-1">Autonomous Lead Discovery</h1>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-            AI-powered YouTube channel discovery and qualification powered by Groq LLM
+            AI-powered YouTube channel discovery and qualification powered by OpenAI LLM
           </p>
         </div>
       </div>
