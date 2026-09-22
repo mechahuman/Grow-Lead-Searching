@@ -71,7 +71,7 @@ Return ONLY valid JSON. No markdown, no code fences.`
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.2,
+      temperature: 1,
       max_completion_tokens: 256,
     })
 

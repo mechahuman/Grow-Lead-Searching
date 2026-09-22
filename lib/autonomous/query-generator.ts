@@ -138,7 +138,7 @@ Return ONLY a JSON array. No explanations.`
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },
     ],
-    temperature: 0.7,           // Some creativity for query variety
+    temperature: 1,           // Required to be 1 for luna model
     max_completion_tokens: 512, // More than enough for an array of 10 short strings
     response_format: { type: 'text' }, // We handle JSON parsing ourselves
   })

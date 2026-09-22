@@ -186,7 +186,7 @@ export async function qualifyChannel(
       { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },
     ],
-    temperature: 0.2,           // Low temperature for consistent, reproducible decisions
+    temperature: 1,           // Required to be 1 for luna model
     max_completion_tokens: 256, // Schema is short — 256 is more than enough
   })
 
